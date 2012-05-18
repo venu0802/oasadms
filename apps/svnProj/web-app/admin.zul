@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?init class="org.zkoss.zkplus.databind.AnnotateDataBinderInit" ?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+<?page zscriptLanguage="GroovyGrails"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+    <window apply="usf.AdminComposer">
+
+       <hbox align="center">
+
+            <groupbox mold="3d" width="1000px">
+                <image width="250px" height="50px" src="${z.resource(dir:'images', file:'usf2.png')}"/>
+                <space/>
+                <space/>
+                <label style="font-size:200%; font-weight: bold" value=" Archive Administration"/>
+
+
+            </groupbox>
+        </hbox>
+
+        <!-- Master block -->
+
+        <groupbox mold="3d" width="1000px">
+            <vbox>
+                <label id="renameLabl" style="color:red;"
+                       value="----------------------->Now Change Name and Press Rename" visible="false"/>
+                <groupbox mold="3d" width="990px">
+                    <hbox width="1000px" align="center">
+                        <label style="font-weight: bold" value="Select"/>
+                        <radiogroup id="roleStaffRadioBtn">
+                            <vbox>
+                                <radio label="Staff" selected="true"/>
+                                <radio label="Role"/>
+                            </vbox>
+                        </radiogroup>
+
+                        <combobox id="roleStaffCombo" width="300px" autodrop="true"/>
+
+                        <button id="createBtn" label="Create"/>
+                        <button id="deleteBtn" label="Delete"/>
+                        <button id="renameBtn" label="Rename" visible="false"/>
+
+
+                    </hbox>
+                </groupbox>
+
+            </vbox>
+        </groupbox>
+
+        <!-- Detail block -->
+
+
+        <groupbox mold="3d" id="detailGroupBox" width="1000px" visible="true">
+            <hbox width="1000px">
+                <vbox>
+
+                    <!--<listbox>
+                        <listhead>
+                            <listheader label="ID"/>
+
+                        </listhead>
+                        <listitem forEach="#{adm$composer.books}">
+                            <listcell label="#{each}"/>
+
+                        </listitem>
+                    </listbox>-->
+                    <label style="font-weight: bold" value="Staff With the Role:"/>
+                    <vbox id="staffRoleDetails" width="150px">
+
+                        <div id="staffRoleDetailsDiv"/>
+                    </vbox>
+                </vbox>
+                <vbox id="vboxAvailable">
+                    <label id="availableLbl" style="font-weight: bold" value="Available Roles:"/>
+                    <listbox width="375px" id="availableList" checkmark="true" multiple="true">
+                        <listhead>
+                            <listheader label="Name"/>
+                        </listhead>
+                    </listbox>
+                </vbox>
+                <space/>
+                <vbox align="center" id="vboxBtn">
+
+                    <button id="addToAssignedBtn" image="${z.resource(dir:'images', file:'ButtonArrowRight32.png')}"
+                            tooltiptext="Add to Assigned"/>
+                    <button id="rmvFromAssignedBtn" image="${z.resource(dir:'images', file:'ButtonArrowLeft32.png')}"
+                            tooltiptext="Remove From Assigned"/>
+                </vbox>
+                <space/>
+                <vbox align="start">
+                    <label id="assignedLbl" style="font-weight: bold" value="Assigned Role:"/>
+                    <listbox width="375px" name="Assigned" id="assignedList" checkmark="true" multiple="true">
+                        <listhead width="100%">
+                            <listheader label="Name"/>
+                        </listhead>
+                    </listbox>
+                </vbox>
+                <space/>
+
+            </hbox>
+        </groupbox>
+
+    </window>
+
+</zk>

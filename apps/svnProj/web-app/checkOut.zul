@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?init class="org.zkoss.zkplus.databind.AnnotateDataBinderInit" ?>
+<?variable-resolver class="org.zkoss.zkplus.spring.DelegatingVariableResolver"?>
+<?page zscriptLanguage="GroovyGrails"?>
+
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+    <window apply="usf.GetListComposer">
+
+        <!-- Star of Title Box-->
+        <hbox align="center">
+
+            <groupbox mold="3d" width="1000px">
+                <image width="250px" height="50px" src="${z.resource(dir:'images', file:'usf2.png')}"/>
+                <space/>
+                <space/>
+                <label style="font-size:200%; font-weight: bold" value=" Harvest Archived Objects Extract"/>
+
+            </groupbox>
+        </hbox>
+        <vbox id="errorBlock" visible="false" >
+              <label id="errorMessage"/>
+        </vbox>
+        <groupbox mold="3d" width="1000px">
+            <h:b>Select Environment</h:b>
+            <combobox id="environmentCombo" width="200px" autodrop="true">
+                <comboitem label="Env1"/>
+                <comboitem label="Env2"/>
+                <comboitem label="Env3"/>
+            </combobox>
+            <space spacing="10px"/>
+            <button id="clearAllBtn" label="Clear all"/>
+            <space spacing="10px"/>
+            <h:b>Enter Package/Object Name</h:b>
+            <textbox id="packageObjectText" visible="false" width="280px"/>
+            <combobox id="packageObjectCombo" width="280px" autodrop="true" autocomplete="false">
+                <comboitem label="Simple and Rich"
+                           description="The simplest way to make Web applications rich"/>
+                <comboitem label="Cool!"
+                           description="The coolest technology"/>
+                <comboitem label="Ajax and RIA"
+                           description="Rich Internet Application by Ajax"/>
+            </combobox>
+            <button id="clearPackBtn" label="Clear"/>
+        </groupbox>
+       <hbox>
+           <vbox id="ojbectInfo" visible="true">
+               <groupbox id="objInfoGroup" mold="3d" width="140px" height="50px">
+                   <vbox>
+                       <h:b id="title">Object Info</h:b>
+                       <label style="font-weight: bold" id="createdBy" value="Created by"/>
+                       <label id="createdByVal"/>
+                       <label id="created" style="font-weight: bold" value="Created on:"/>
+                       <label id="createdVal"/>
+                       <label id="modifiedBy" style="font-weight: bold" value="Modified By:"/>
+                       <label id="modifiedByVal"/>
+                       <label id="modifiedOn" style="font-weight: bold" value="Modified On:"/>
+                       <label id="modifiedOnVal"/>
+                       <label id="applied" style="font-weight: bold" value="Applied On:"/>
+                       <label id="appliedVal"/>
+                   </vbox>
+               </groupbox>
+           </vbox>
+
+        <groupbox mold="3d" id="ObjectListGroup" width="855px">
+            <radiogroup id="inProdVerRadioBtn">
+                <radio label="Prod Versions Only" selected="true"/>
+                <radio label="All Versions"/>
+            </radiogroup>
+            <space/><space/><h:b>Rows To Fetch</h:b> <textbox  id="fetchText" width="40px"  value="18"/>
+            <listbox id="objectList" checkmark="true">
+                <listhead sizable="true">
+                    <listheader width="35%" label="Object"/>
+                    <listheader width="50%" label="Package"/>
+                    <listheader width="7%" label="Version"/>
+                    <listheader width="8%" label="Applied"/>
+                </listhead>
+            </listbox>
+        </groupbox>
+         <vbox/>
+        </hbox>
+        <paging id="ObjPaging" width="1000px" pageSize="18"  />
+        <button width="10%" id="downLoadBtn" sclass="paginateButtons" label="Download"/>
+        <vbox id="scaffoldingBox"/>
+
+
+
+
+
+    </window>
+
+</zk>
