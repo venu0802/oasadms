@@ -8,6 +8,7 @@ import javax.sql.DataSource
 import groovy.sql.Sql
 import oracle.sql.BLOB
 import org.zkoss.zk.ui.event.InputEvent
+import java.sql.Connection
 
 class GetListComposer extends GrailsComposer {
     // variables defined in checkOut.zul
@@ -99,7 +100,10 @@ class GetListComposer extends GrailsComposer {
         Repository rep = objectList.getSelectedItem().value
         // dataSource = (DataSource) WebApplicationContextUtils.getWebApplicationContext(ServletContextHolder.servletContext).getBean('dataSource')
         DataSource dataSource = (DataSource) svnService.getDataSource()
-        def sql = new groovy.sql.Sql(dataSource)
+        Connection conn = dataSource.getConnection()
+		conn.setAutoCommit(false)
+        def sql = new groovy.sql.Sql(conn)
+        //def sql = new groovy.sql.Sql(dataSource)
 
         def storedProcCall = """{? = call harv_import.f_get_blob($rep.id)}"""
         sql.call(storedProcCall, [Sql.BLOB])

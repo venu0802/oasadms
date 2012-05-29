@@ -38,7 +38,7 @@ environments {
         //grails.serverURL = "http://www.changeme.com"
         cas.loginUrl = 'https://webauth.usf.edu:443/login'
         cas.validateUrl = 'https://webauth.usf.edu:443/serviceValidate'
-        cas.serviceUrl = 'https://usfpro1.forest.usf.ed/svnProj/checkOut.zul'
+        cas.serviceUrl = 'https://usfpro1.forest.usf.edu/svnProj/checkOut.zul'
         cas.disabled = false
         cas.mocking = false
     }

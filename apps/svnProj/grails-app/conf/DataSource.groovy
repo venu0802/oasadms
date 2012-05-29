@@ -25,7 +25,7 @@ environments {
     production {
         dataSource {
             dbCreate = "update"
-            jndiName = "jdbc/svnProjDevDS"
+            jndiName = "jdbc/svnProjDS"
         }
     }
 }
