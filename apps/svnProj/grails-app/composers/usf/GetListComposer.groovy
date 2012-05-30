@@ -6,7 +6,8 @@ import org.zkoss.zkgrails.GrailsComposer
 import org.zkoss.zul.*
 import javax.sql.DataSource
 import groovy.sql.Sql
-import oracle.sql.BLOB
+//import groovy.sql.Sql.BLOB
+import java.sql.Blob
 import org.zkoss.zk.ui.event.InputEvent
 import java.sql.Connection
 
@@ -106,13 +107,14 @@ class GetListComposer extends GrailsComposer {
         //def sql = new groovy.sql.Sql(dataSource)
 
         def storedProcCall = """{? = call harv_import.f_get_blob($rep.id)}"""
-        sql.call(storedProcCall, [Sql.BLOB])
+        sql.call(storedProcCall,  [Sql.BLOB] )
                 {res ->
-                    BLOB blb = res
-                    InputStream ist = blb.getBinaryStream()
+                    //Sql.BLOB blb = res
+                    //java.sql.Blob blb = res
+                    InputStream ist = res.getBinaryStream()
                     Filedownload.save(ist, "text/html", "$rep.objectName")
                 }
-        sql.close()
+        //sql.close()
     }
 
     //---------------------------------------------------
