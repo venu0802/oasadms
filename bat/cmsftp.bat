@@ -46,18 +46,30 @@ for /f "tokens=1,2,3,4 delims=: " %%a in ( "%current_line%" ) do (
        echo cd /home/appworx-wd/%_dbinstance%/%working_directory%/%%g >> %jiraissue%_sftp.txt
        echo cd /home/appworx-wd/%_dbinstance%/%working_directory%/%%g >> %jiraissue%_wh_sftp.txt
       )       
+      
       if "%%g" == "exp" (   
        echo put dvlp\%%a >>  %jiraissue%_sftp.txt      
       ) else (
        echo put dvlp\%%a >>  %jiraissue%_sftp.txt
        echo put dvlp\%%a >>  %jiraissue%_wh_sftp.txt
       )
+      
+      if "%%g" == "shl" (   
+       echo chmod 755 /home/appworx-wd/%_dbinstance%/%working_directory%/%%g/%%a >> %jiraissue%_sftp.txt
+       echo chmod 755 /home/appworx-wd/%_dbinstance%/%working_directory%/%%g/%%a >> %jiraissue%_wh_sftp.txt       
+      )    
+      
     )
  )
 
  if "%%a" == "version" (
    if "%%d" == "start" (
        set _versioncopy=start
+       if "%_dbinstance%" == "dvlp"  (echo rm /home/local/appworx/import/*.* >> %jiraissue%_sftp.txt)   
+       if "%_dbinstance%" == "uat"   (echo rm /home/local/appworx/import/*.* >> %jiraissue%_sftp.txt)  
+       if "%_dbinstance%" == "prod"  (echo rm /home/local/appworx/import/*.* >> %jiraissue%_sftp.txt)  
+       if "%_dbinstance%" == "dvlpu" (echo rm /home/local/appworxu/import/*.* >> %jiraissue%_sftp.txt)           
+       if "%_dbinstance%" == "uatu"  (echo rm /home/local/appworxu/import/*.* >> %jiraissue%_sftp.txt)        
    )
  )
 
@@ -183,21 +195,21 @@ REM **
 REM ** run psftp command from cm directory
 REM **
 psftp -b %_verpath%\%_projpath%\%jiraissue%_sftp.txt -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu
-if %copy_to_server% == "trusy" (
+if "%copy_to_server%" == "trusy" (
  set copy_to_server=wh5000
  psftp -b %_verpath%\%_projpath%\%jiraissue%_wh_sftp.txt -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu 
 )
 REM **
 REM ** Delete log files
 REM **
-if exist %jiraissue%_sftp.txt (
- echo.deleting sftp file, %jiraissue%_sftp.txt
- del %jiraissue%_sftp.txt
-)
-if exist %jiraissue%_wh_sftp.txt (
- echo.deleting sftp file, %jiraissue%_wh_sftp.txt
- del %jiraissue%_wh_sftp.txt
-)
+REM if exist %jiraissue%_sftp.txt (
+REM  echo.deleting sftp file, %jiraissue%_sftp.txt
+REM  del %jiraissue%_sftp.txt
+REM )
+REM if exist %jiraissue%_wh_sftp.txt (
+REM  echo.deleting sftp file, %jiraissue%_wh_sftp.txt
+REM  del %jiraissue%_wh_sftp.txt
+REM )
 :theend
 set _revision=
 set _password=
