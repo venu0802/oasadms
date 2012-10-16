@@ -28,14 +28,14 @@ for /f "tokens=1,2,3,4 delims=: " %%a in ( "%current_line%" ) do (
      echo quit >>  %jiraissue%_sftp.txt    
      echo quit >>  %jiraissue%_wh_sftp.txt
     )
- ) else (
+    ) else (
    if "%%a" == "revision" (
     set _revision=%%b
    )
  )
 
  if "!_versioncopy!" == "start" (    
-    for /f "tokens=1 delims=\ " %%g in ( "%current_line%" ) do ( 
+    for /f "tokens=1,2,3,4 delims=\" %%g in ( "%current_line%" ) do ( 
       if "%%g" == "exp" (   
        if "%_dbinstance%" == "dvlp"  (echo cd /home/local/appworx/import >> %jiraissue%_sftp.txt)   
        if "%_dbinstance%" == "uat"   (echo cd /home/local/appworx/import >> %jiraissue%_sftp.txt)  
@@ -43,33 +43,34 @@ for /f "tokens=1,2,3,4 delims=: " %%a in ( "%current_line%" ) do (
        if "%_dbinstance%" == "dvlpu" (echo cd /home/local/appworxu/import >> %jiraissue%_sftp.txt)           
        if "%_dbinstance%" == "uatu"  (echo cd /home/local/appworxu/import >> %jiraissue%_sftp.txt)   
       ) else (
-       echo cd /home/appworx-wd/%_dbinstance%/%working_directory%/%%g >> %jiraissue%_sftp.txt
-       echo cd /home/appworx-wd/%_dbinstance%/%working_directory%/%%g >> %jiraissue%_wh_sftp.txt
+       echo cd /home/%copy_to_server%/appworx-wd/%_dbinstance%/%working_directory%/%%g >> %jiraissue%_sftp.txt
+       echo cd /home/%copy_to_server%/appworx-wd/%_dbinstance%/%working_directory%/%%g >> %jiraissue%_wh_sftp.txt
       )       
       
-      if "%%g" == "exp" (   
-       echo put dvlp\%%a >>  %jiraissue%_sftp.txt      
+      if "%%g" == "exp" (        
+       echo put dvlp\%%a %%h >>  %jiraissue%_sftp.txt      
       ) else (
-       echo put dvlp\%%a >>  %jiraissue%_sftp.txt
-       echo put dvlp\%%a >>  %jiraissue%_wh_sftp.txt
+       echo del %%h >>  %jiraissue%_sftp.txt
+       echo put dvlp\%%a %%h >>  %jiraissue%_sftp.txt 
+       echo del %%h >>  %jiraissue%_wh_sftp.txt       
+       echo put dvlp\%%a %%h >>  %jiraissue%_wh_sftp.txt
       )
-      
-      if "%%g" == "shl" (   
-       echo chmod 755 /home/appworx-wd/%_dbinstance%/%working_directory%/%%g/%%a >> %jiraissue%_sftp.txt
-       echo chmod 755 /home/appworx-wd/%_dbinstance%/%working_directory%/%%g/%%a >> %jiraissue%_wh_sftp.txt       
+     
+      if "%%g" == "shells" (   
+       echo chmod 755 /home/%copy_to_server%/appworx-wd/%_dbinstance%/%working_directory%/%%g/%%h >> %jiraissue%_sftp.txt
+       echo chmod 755 /home/%copy_to_server%/appworx-wd/%_dbinstance%/%working_directory%/%%g/%%h >> %jiraissue%_wh_sftp.txt       
       )    
-      
     )
  )
 
  if "%%a" == "version" (
    if "%%d" == "start" (
        set _versioncopy=start
-       if "%_dbinstance%" == "dvlp"  (echo rm /home/local/appworx/import/*.* >> %jiraissue%_sftp.txt)   
-       if "%_dbinstance%" == "uat"   (echo rm /home/local/appworx/import/*.* >> %jiraissue%_sftp.txt)  
-       if "%_dbinstance%" == "prod"  (echo rm /home/local/appworx/import/*.* >> %jiraissue%_sftp.txt)  
-       if "%_dbinstance%" == "dvlpu" (echo rm /home/local/appworxu/import/*.* >> %jiraissue%_sftp.txt)           
-       if "%_dbinstance%" == "uatu"  (echo rm /home/local/appworxu/import/*.* >> %jiraissue%_sftp.txt)        
+       if "%_dbinstance%" == "dvlp"  (echo del /home/local/appworx/import/*.exp >> %jiraissue%_sftp.txt)   
+       if "%_dbinstance%" == "uat"   (echo del /home/local/appworx/import/*.exp >> %jiraissue%_sftp.txt)  
+       if "%_dbinstance%" == "prod"  (echo del /home/local/appworx/import/*.exp >> %jiraissue%_sftp.txt)  
+       if "%_dbinstance%" == "dvlpu" (echo del /home/local/appworxu/import/*.exp >> %jiraissue%_sftp.txt)           
+       if "%_dbinstance%" == "uatu"  (echo del /home/local/appworxu/import/*.exp >> %jiraissue%_sftp.txt)        
    )
  )
 
@@ -78,7 +79,7 @@ REM end of do
 goto :EOF
 :begin
 REM **
-REM ** Mlain processing starts here
+REM ** Main processing starts here
 REM ** Initialize variables
 REM **
 set _revision=
@@ -122,16 +123,17 @@ set /p _userid=enter your %copy_to_server% user id:
 echo enter password
 editv32 -m _password
 REM **
-REM ** set the applications manager working directory and get into the directory
+REM ** set the AM working directory and get into the directory
 REM ** 
 for /f "tokens=1 delims=- " %%a in ( "%jiraissue%" ) do ( set _projpath=%%a)
-if "%_projpath%" == "absfam" ( set working_directory=fast)
-if "%_projpath%" == "absgam" ( set working_directory=gems)
+if "%_projpath%" == "absfam"    ( set working_directory=fast)
+if "%_projpath%" == "absgam"    ( set working_directory=gems)
 if "%_projpath%" == "aisdw"  ( set /p working_directory="Enter name of AIS app(tas/dwhouse)" )
-if "%_projpath%" == "faam"   ( set working_directory=urpt)
-if "%_projpath%" == "itam"   ( set working_directory=common)
-if "%_projpath%" == "oasam"  ( set working_directory=oasis)
-if "%_projpath%" == "roam"   ( set working_directory=repo)
+if "%_projpath%" == "faam"      ( set working_directory=urpt)
+if "%_projpath%" == "itam"      ( set working_directory=common)
+if "%_projpath%" == "oasam"     ( set working_directory=oasis)
+if "%_projpath%" == "oasbdmsam" ( set working_directory=oasis)
+if "%_projpath%" == "roam"      ( set working_directory=repo)
 cd %_projpath%
 REM **
 REM ** These set commands convert text from lower to upper text
@@ -194,10 +196,10 @@ for /f "tokens=*" %%i in (%ujiraissue%.txt) do (
 REM **
 REM ** run psftp command from cm directory
 REM **
-psftp -b %_verpath%\%_projpath%\%jiraissue%_sftp.txt -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu
-if "%copy_to_server%" == "trusy" (
+psftp -b %_verpath%\%_projpath%\%jiraissue%_sftp.txt -be -bc -v -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu
+if "%copy_to_server%" == "truly" (
  set copy_to_server=wh5000
- psftp -b %_verpath%\%_projpath%\%jiraissue%_wh_sftp.txt -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu 
+ psftp -b %_verpath%\%_projpath%\%jiraissue%_wh_sftp.txt -be -bc -v -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu 
 )
 REM **
 REM ** Delete log files
