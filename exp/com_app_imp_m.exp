@@ -1,0 +1,110 @@
+Remark Exported from Version 8 on 2012/10/30 14:39:55 from Master SFADVLPU at 131.247.89.75
+CHECK B AWSHELLS
+CHECK D Character
+CHECK D Y_or_N
+CHECK G OASIS
+CHECK K COMMON
+CHECK L COMMON
+CHECK Q BATCH
+CHECK R COM
+CHECK R DBA
+CHECK R PRODSUPPORT-EDIT
+CHECK R VIEWALL
+START=so_job_table Upd so_module=COM_APP_IMP_M
+so_abort_queue=Y
+so_application=COMMON
+so_command_type=AWSHELLS
+so_copies=1
+so_default_pri=50
+so_doc=
+so_job_descr=Appworx Import
+so_module=COM_APP_IMP_M
+so_library=COMMON
+so_log_run=Y
+so_login_match=X
+so_login=
+so_max_revs_kept=10
+so_max_run_time=0
+so_min_run_time=0
+so_mod_condition=@
+so_node=OASIS
+so_out_file_name=
+so_out_function=STORE
+so_outp_reqd=N
+so_print_syslog=N
+so_printer=
+so_printer_text=
+so_printer_ctype=
+so_program=com_app_imp_m.shl
+so_queue=BATCH
+so_report_width=
+so_restart=N
+so_retentn_days=7
+so_rpf_options=
+so_single_run=Y
+so_threads=
+so_avg_runtime=
+so_active_flag=Y
+so_predecessors=
+so_pred_ref_names=
+so_login2=
+so_group_names=
+so_scan_name=
+so_notif_name=
+so_envlst_name=
+so_cit_name=
+roles=DBA B COM B PRODSUPPORT-EDIT B VIEWALL B
+END so_job_table
+START=so_job_prompts Upd so_module=COM_APP_IMP_M so_prompt=1
+so_max_length=
+so_max_value=
+so_min_value=
+so_multi_select=N
+so_tooltip=
+so_prompt=1
+so_prompt_descr=Import folder
+so_prompt_dflt=#appworx_import_dir
+so_pt_descr=Character
+so_prompt_user=N
+so_quote_char=
+so_required=Y
+so_upper_case=N
+so_variable_name=l_imp_folder
+END so_job_prompts
+START=so_job_prompts Upd so_module=COM_APP_IMP_M so_prompt=2
+so_max_length=
+so_max_value=
+so_min_value=
+so_multi_select=N
+so_tooltip=
+so_prompt=2
+so_prompt_descr=JIRA Issue Name
+so_prompt_dflt=
+so_pt_descr=Character
+so_prompt_user=Y
+so_quote_char=
+so_required=Y
+so_upper_case=N
+so_variable_name=l_pkgnm
+END so_job_prompts
+START=so_job_prompts Upd so_module=COM_APP_IMP_M so_prompt=3
+so_max_length=
+so_max_value=
+so_min_value=
+so_multi_select=N
+so_tooltip=
+so_prompt=3
+so_prompt_descr=Overlay Existing Schedule on Import
+so_prompt_dflt=N
+so_pt_descr=Y_or_N
+so_prompt_user=Y
+so_quote_char=
+so_required=Y
+so_upper_case=N
+so_variable_name=
+END so_job_prompts
+DELETE=so_job_prompts Upd so_module=COM_APP_IMP_M so_prompt>3
+DELETE=aw_module_sched Upd so_module=COM_APP_IMP_M aw_sch_name not_in ('no sche\
+DELETE=ds')
+DELETE=so_object_cond Upd so_module=COM_APP_IMP_M so_soc_order  > 0 and so_obj_\
+DELETE=type 'M'
