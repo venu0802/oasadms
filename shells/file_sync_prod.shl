@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# BH 12/08/02
+#    file_sync.shl
+#      used to sync the fmx directory across all of the INB servers
+#
+#      NOTES:
+#        1) forms will be compiled on one server and then by using this
+#           rsync command the files will be in sync across servers
+#        2) rsync is smart enough to figure out if files have changed
+#        3) the --delete flag will remove files from the dest server if
+#           they are no longer on the source server
+#        4) this only works without a password prompt if keys are shared
+#         
+#        INSTRUCTIONS FOR SHARING KEYS:
+#          a) log in to source machine (i.e. usfdev2)
+#          b) from the home directory (cd ~) type:
+#               ssh-keygen -t rsa
+#                 NOTE: accept the defaults when prompted with questions
+#                       by just hitting enter
+#          c) this command will create a file called ~/.ssh/id_rsa.pub
+#          d) copy this file to each server that will be synced:
+#               scp ~/.ssh/id_rsa.pub usfpro4:/home/{user_name}
+#               scp ~/.ssh/id_rsa.pub usfpro5:/home/{user_name}
+#               scp ~/.ssh/id_rsa.pub usfpro6:/home/{user_name}
+#               scp ~/.ssh/id_rsa.pub usfpro7:/home/{user_name}
+#               scp ~/.ssh/id_rsa.pub usfpro8:/home/{user_name}
+#          e) from the remote server, copy the contents of id_rsa.pub to 
+#             ~/.ssh/authorized_keys with the next 2 commands:
+#               cat ~/id_rsa.pub >> ~/.ssh/authorized_keys
+#               chmod 700 ~/.ssh/authorized_keys  
+#          f) now this script should be able to be run without a password
+
+lower_sid=`echo ${ORACLE_SID%%.*} | tr [:upper:] [:lower:]`
+rsync -avHO --delete /u01/$lower_sid/custom/fmx usfpro4:/u01/$lower_sid/custom
+rsync -avHO --delete /u01/$lower_sid/custom/fmx usfpro5:/u01/$lower_sid/custom
+rsync -avHO --delete /u01/$lower_sid/custom/fmx usfpro6:/u01/$lower_sid/custom
+rsync -avHO --delete /u01/$lower_sid/custom/fmx usfpro7:/u01/$lower_sid/custom
+rsync -avHO --delete /u01/$lower_sid/custom/fmx usfpro8:/u01/$lower_sid/custom

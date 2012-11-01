@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# BH 12/07/11
+#    rdf_compile.shl
+#      used to compile custom Banner reports
+#
+#      NOTES:
+#        1) By default, the .rep's will be moved into the $FORMS_HOME/fmx
+#           directory and the $REPORTS_PATH variable in Weblogic will look
+#           there first
+#        3) The ORACLE_SID is set upon login, if it's not correct then rerun
+#           the ~/.bash_profile
+#
+usage() {
+   echo "USAGE: $0 report_name.fmb"
+   exit 1
+}
+
+nofile() {
+   echo "$1 does not exist in this directory"
+   exit 1
+}
+
+[ $# -ne 1 ] && usage
+
+[ ! -f ./$1  ] && nofile $1
+
+read -p "Username: " ora_user
+export fgen_user=$ora_user
+read -s -p "Password " ora_pass
+export fgen_pass=$ora_pass
+
+export rep_name=${1%%.*}.rep
+cp $CODETREE/fmb/goqorep.pll .
+cp $CODETREE/fmb/GOQOREP.pll .
+
+echo -e "\nCompiling in $ORACLE_SID..."
+
+rwconverter.sh source=$1 userid=$fgen_user/$fgen_pass dest=$rep_name batch=yes logfile=${1%%.*}.log overwrite=yes stype=rdffile dtype=repfile
+
+lower_rep_name=`echo ${1%%.*} | tr [:upper:] [:lower:]`.rep
+upper_rep_name=`echo ${1%%.*} | tr [:lower:] [:upper:]`.rep
+
+ln $lower_rep_name $upper_rep_name
+
+mv $lower_rep_name ./fmx
+mv $upper_rep_name ./fmx
+rm ./goqorep.pll
+rm ./GOQOREP.pll
