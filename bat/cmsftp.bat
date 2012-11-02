@@ -202,14 +202,14 @@ if "%copy_to_server%" == "truly" (
 REM **
 REM ** Delete log files
 REM **
-REM if exist %jiraissue%_sftp.txt (
-REM  echo.deleting sftp file, %jiraissue%_sftp.txt
-REM  del %jiraissue%_sftp.txt
-REM )
-REM if exist %jiraissue%_wh_sftp.txt (
-REM  echo.deleting sftp file, %jiraissue%_wh_sftp.txt
-REM  del %jiraissue%_wh_sftp.txt
-REM )
+if exist %jiraissue%_sftp.txt (
+ echo.deleting sftp file, %jiraissue%_sftp.txt
+ del %jiraissue%_sftp.txt
+)
+if exist %jiraissue%_wh_sftp.txt (
+ echo.deleting sftp file, %jiraissue%_wh_sftp.txt
+ del %jiraissue%_wh_sftp.txt
+)
 :theend
 set _password=
 set _userid=
