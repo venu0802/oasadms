@@ -1,0 +1,491 @@
+#!/bin/ksh
+# $Header: EXEC-GJBPRUNP,v 0.91 99/05/12 08:00:00 agivens/lparris Exp $
+# updated significantly since original version - stu & reeve
+# Company Name
+# To turn on debug, uncomment next line
+# DEBUG=YES;export DEBUG
+if [ "$DEBUG" = "YES" ]; then
+  env|sort
+  set -x
+  echo 'In BANJSUBP2_ONE...'
+  echo 'PATH is:'
+  echo '  '$PATH
+  echo 'ORACLE_PATH is:'
+  echo '  '$ORACLE_PATH
+fi
+
+if [ -f $AW_HOME/exec/PREFIX_BANNER ]; then
+   . PREFIX_BANNER
+fi
+
+export program=`eval echo "$program"`     
+
+if [ "$DEBUG" = "YES" ]; then
+  env|sort
+  set -x
+  echo 'In BANJSUBP2_ONE...'
+  echo 'PATH is:'
+  echo '  '$PATH
+  echo 'ORACLE_PATH is:'
+  echo '  '$ORACLE_PATH
+fi
+
+# checking some BAnner env. vars
+echo BANNER_HOME is $BANNER_HOME
+GURJOBS=$BANNER_HOME;export GURJOBS
+BANNER_JOBS=$BANNER_HOME;export BANNER_JOBS
+echo GURJOBS is $GURJOBS
+echo BANNER_JOBS is $BANNER_JOBS
+
+curdate=`date|awk '{print $3"-"$2"-"$6" "$4}'`
+echo 'The current date/time stamp is: '$curdate
+
+# Check for program existence
+# Banner shell jobs
+ext=''
+if [ "$source" = "BANNERSH" -o "$source" = "BANNERSH2" -o "$source" = "BANNERJAVA" ]; then
+   ext=.shl
+   HOME="/spool";export HOME
+fi
+
+#if [ ! -f $program$ext ]; then
+#  echo "Program $program$ext does not exist... terminating."
+#  exit 1
+#fi
+
+echo $rpf_options >> $par
+# split par files
+cat $par|grep dyn~ > $par.2
+cat $par|grep -v dyn~ >$par.1
+lines=`cat $par.1|wc -l|awk '{print $1}'`
+if [ "$lines" -lt 1 ]; then
+  echo 'Too few parameters - missing one up number.'
+  echo 'Exiting with error (return code = 2).'
+  exit 2
+fi
+
+# execution of Banner Shell jobs, job inserted into GJBPRUN table
+tempsql='tempsql'$seq_no'.sql'
+if [ -f "$tempsql" ]; then
+    rm -f $tempsql
+fi
+echo 'whenever sqlerror exit 9' >$tempsql
+echo 'set termout off' >>$tempsql
+commandu=`echo $command|tr '[a-z]' '[A-Z]'`
+i=0
+s=0
+x=0
+cat $par.1|while read line
+do
+  i=`expr $i + 1`
+  case "$i" in
+    *) s=`expr $s + 1`
+       if [ "$s" -ne "$lines" ]; then
+         if [ "$s" -lt 10 ]; then
+           argnum='0'$s
+         else
+           argnum=$s
+         fi
+       else
+         argnum=99
+       fi
+       fullline=$line
+       while true
+       do
+       var=`echo $line|awk '{{ FS = "~"}{ print $1}}'`
+       rest=`echo $line|sed "s/$var~//"`
+       if [ "$x" = "0" ]; then
+         echo "column gjbpseq new_value one_up" >>$tempsql
+         echo "select 'one_up_is',gjbpseq.nextval$net_connect gjbpseq from dual; " >>$tempsql
+         echo "-- update so_job_queue set so_ref1 = ltrim('&one_up') where so_jobid=$jobid; " >>$tempsql
+         x=1
+       fi
+       if [ "$fullline" = "$rest" ]; then
+         echo "insert into GJBPRUN
+			        (GJBPRUN_JOB,
+                                 GJBPRUN_ONE_UP_NO,
+                                 GJBPRUN_NUMBER,
+                                 GJBPRUN_ACTIVITY_DATE,
+                                 GJBPRUN_VALUE)
+                        select '$commandu',
+                                 &one_up,
+                                '$argnum',
+                                 SYSDATE,
+                                decode('$argnum','99',nvl(to_char(gjbjobs_line_count),'55'),'$line')
+                        from gjbjobs$net_connect
+                        where gjbjobs_name = '$commandu';
+           " >> $tempsql
+          break
+       fi
+       if [ "$var" = "$rest" ]; then
+           rest=""
+       fi
+       if [ "$var" != "" ]; then
+         echo "insert into GJBPRUN$net_connect
+			        (GJBPRUN_JOB,
+                                 GJBPRUN_ONE_UP_NO,
+                                 GJBPRUN_NUMBER,
+                                 GJBPRUN_ACTIVITY_DATE,
+                                 GJBPRUN_VALUE)
+                        values ('$commandu',
+                                 &one_up,
+                                '$argnum',
+                                 SYSDATE,
+                                '$var');
+            " >> $tempsql
+          line=$rest
+        else
+          break
+	fi
+	done
+      dummy="YES"  ;;
+  esac
+done
+cat $par.2 | while read line
+# insterting the dynamic parameter
+do
+ argnum=88
+ var=`echo $line|awk '{{ FS = "~"}{ print $2}}'`
+ lab=`echo $line|awk '{{ FS = "~"}{ print $3}}'`
+ if [ "$var" = "" ]; then
+      echo 'variable has no value'
+ else
+         echo "insert into GJBPRUN$net_connect
+                 (GJBPRUN_JOB,
+                  GJBPRUN_ONE_UP_NO,
+                  GJBPRUN_NUMBER,
+                  GJBPRUN_ACTIVITY_DATE,
+                  GJBPRUN_VALUE,
+                  GJBPRUN_LABEL)
+                values (
+                  '$commandu',
+                   &one_up,
+                   '$argnum',
+                   SYSDATE,
+                   '$var',
+                   '$lab');
+            " >> $tempsql
+ fi
+done
+# error checking
+if [ -f "$tempsql" ]; then
+  if [ "$DEBUG" = "YES" ]; then
+  echo 'Contents of temporary SQL file #1...'
+    cat $tempsql
+  echo '...end of temporary SQL file #1.'
+  echo ' '
+  fi
+else
+  echo 'Temporary SQL file '$tempsql' does not exist.'
+  echo 'Exiting with error (return code = 3).'
+  exit 3
+fi
+
+tempsql2='tempsql2'$seq_no'.sql'
+if [ -f "$tempsql2" ]; then
+    rm -f $tempsql2
+fi
+tempout='tempout.'$seq_no
+echo "spool $tempout
+start $tempsql
+spool off
+" > $tempsql2
+
+if [ -f "$tempsql2" ]; then
+  if [ "$DEBUG" = "YES" ]; then
+    echo 'Contents of temporary SQL file #2...'
+    cat $tempsql2
+    echo '...end of temporary SQL file #2.'
+    echo ' '
+  fi
+else
+  echo 'Temporary SQL file '$tempsql2' does not exist.'
+  echo 'Exiting with error (return code = 4).'
+  exit 4
+fi
+
+logtest=login.$seq_no
+echo "$login
+spool $logtest
+prompt got it
+set verify off
+set heading off
+spool off
+start $tempsql2
+"|sqlplus -s
+err=$?
+if [ -f $logtest ]; then
+  rm -f $logtest 1>/dev/null 2>&1
+else
+  echo 'Could not log in to SQL*Plus.'
+  echo 'Exiting with error (return code = 5).'
+  exit 5 
+fi
+
+if [ ! -f "$tempout" ]; then
+  echo 'No output file found from run of temporary SQL files.'
+fi
+
+if [ "$err" -ne 0 ]; then
+  echo 'Exiting with error'
+  if [ -f "$tempout" ]; then
+  cat $tempout
+  fi
+  exit $err
+fi
+# get the one_up_number
+one_up=`cat $tempout | grep one_up_is | awk '{print $2}'`;export one_up
+GURJOBS="/spool"; export GURJOBS
+# set the output files
+bannerlis="$GURJOBS/${db_login}_${command}_$one_up.lis"; export bannerlis
+bannerctl="$GURJOBS/${db_login}_${command}_$one_up.ctl"
+bannerlog="$GURJOBS/${db_login}_${command}_$one_up.log"; export bannerlog
+echo GURJOBS is $GURJOBS
+echo bannerlis is $bannerlis
+echo bannerctl is $bannerctl
+echo bannerlog is $bannerlog
+
+if [ "$rpf_options" = "eprint" ]
+then
+ if [ "${command}" != "BANNER_ONLINE_JOB" ]
+ then
+  echo "awrun FTP_EPRINT -u sqloper -z Fr33c4r3 -s Y $bannerlis ${command}.lis">>$SQLOPER_HOME/exec/COMPLETION.${command}
+  #echo "awrun FTP_EPRINT -u sqloper -z Fr33c4r3 -s Y $bannerlog ${command}.log">>$SQLOPER_HOME/exec/COMPLETION.${command}
+  echo "touch $SQLOPER_HOME/tmp/${command}.done">>$SQLOPER_HOME/exec/COMPLETION.${command}
+  echo "awrun FTP_EPRINT -u sqloper -z Fr33c4r3 -s Y $SQLOPER_HOME/tmp/${command}.done ${command}.lis.done">>$SQLOPER_HOME/exec/COMPLETION.${command}
+  echo "rm $SQLOPER_HOME/tmp/${command}.done">>$SQLOPER_HOME/exec/COMPLETION.${command}
+  echo "rm $SQLOPER_HOME/exec/COMPLETION.${command}">>$SQLOPER_HOME/exec/COMPLETION.${command}
+  chmod 700 $SQLOPER_HOME/exec/COMPLETION.${command}
+ fi
+fi
+
+echo stdout is $stdout
+echo >> $bannerlog
+echo "***** BANNERLOG STARTS HERE ****" >>$bannerlog
+echo >> $bannerlog
+
+# executing the Banner Cobol Jobs
+cd $BANNER_HOME
+if [ "$source" = "BANNERCP" -o "$source" = "BANNERCPO" ]; then
+  temppar=$SQLOPER_HOME/run/'temppar.'$seq_no
+  if [ -f "$temppar" ]; then
+    rm -f $temppar
+  fi
+  echo doing banner C programs
+  touch $temppar
+  echo $db_login >> $temppar
+  echo $db_password$net_connect >> $temppar
+  echo $one_up >> $temppar
+  cat $temppar|$program -f -o $bannerlis 1>>$bannerlog 2>&1
+  err=$?
+  rm -f $temppar 1>/dev/null 2>&1
+elif [ "$source" = "BANNERSH" ]; then
+  echo "doing Banner Shells"
+  umask 002
+  $program.shl $db_login $db_password $one_up $commandu 1>$bannerlog 2>&1
+  err=$?
+elif [ "$source" = "BANNERSH2" ]; then
+  UIPW=$login; export UIPW
+  ONE_UP=$one_up; export ONE_UP
+  LOG=$bannerlog; export LOG
+# SCT Banner shl is expecting $TEMP as from job submission
+  TEMP=${command}_${one_up}; export TEMP; echo "TEMP=${TEMP}" >> $stdout
+  $program.shl 1>$bannerlog 2>&1
+  err=$?
+# executing the Banner Java Jobs
+elif [ "$source" = "BANNERJAVA" ]; then
+ echo "doing Banner Java"
+ TEMP=${command}_${one_up}; export TEMP; echo "TEMP=${TEMP}" >> $stdout
+ UIPW=$login; export UIPW
+ PROG=$command; export PROG
+ ONE_UP=$one_up; export ONE_UP
+ LOG=$bannerlog; export LOG
+ H=$GURJOBS; export H
+ echo H is $H
+ HOME=$H;export HOME
+ JOB=$command; export JOB
+ BANUID=$db_login; export BANUID
+ PSWD=$db_password; export PSWD
+ echo $one_up >> $H/$TEMP.in
+# Note: either $program or $command can be used --depending on whether you
+#   are using full program path from UC4, or custom $PATH from banenv.
+ echo "${program}.shl"
+ ${program}.shl 1>>$bannerlog 2>&1
+#${command}.shl 1>>$bannerlog 2>&1
+ err=$?
+ rm -f $H/$TEMP.in 1>/dev/null 2>&1
+else
+  temppar=$SQLOPER_HOME/run/'temppar.'$seq_no
+  if [ -f "$temppar" ]; then
+    rm -f $temppar
+  fi
+  echo doing banner cobol
+  touch $temppar
+  echo $db_login $db_password $one_up $commandu >> $temppar
+# Banner Cobol jobs expect these env vars to be set
+  CMDFILE=$temppar;export CMDFILE
+  PRNTR01=$bannerlis;export PRNTR01
+  DD_PRNTR01=$bannerlis;export DD_PRNTR01
+  LETTER=$bannerlis;export LETTER
+  LCNTRL=$bannerctl;export LCNTRL
+  DD_LCNTRL=$bannerctl;export DD_LCNTRL
+  DD_LETTER=$bannerlis;export DD_LETTER
+  echo $CMDFILE
+  echo $PRNTR01
+  $program 1>> $bannerlog 2>&1
+  err=$?
+  rm -f $temppar 1>/dev/null 2>&1
+fi
+  if [ ! -f $bannerlog ]; then
+    echo "exiting program - No Bannerlog file generated"
+    exit 995
+  fi
+  if [ "$err" != "0" ]; then
+    echo "Non-zero error generated from running job."
+  fi
+cd $SQLOPER_HOME/run
+
+# The code below is commented out by default.  If this table exists
+# and is used (mainly at Utility sites), uncomment the following code
+# 
+# check status from USBSUBM Table
+#
+#tempsqls='tempsqls'$seq_no'.sql'
+#if [ -f "$tempsqls" ]; then
+#    rm -f $tempsqls
+#fi
+#echo 'whenever sqlerror exit 9' >$tempsqls
+#echo 'set heading off' >>$tempsqls
+#echo 'set termout off' >>$tempsqls
+#echo "select 'status '||usbsubm_compl_status from usbsubm where usbsubm_one_up_no=$one_up
+#      and usbsubm_seq_no = 
+#         ( select max(usbsubm_seq_no) 
+#          from usbsubm 
+#          where usbsubm_one_up_no = $one_up );" >>$tempsqls
+#if [ -f "$tempsqls" ]; then
+#  if [ "$DEBUG" = "YES" ]; then
+#    echo 'Contents of temporary status SQL file #1...'
+#    cat $tempsqls
+#    echo '...end of temporary status SQL file #1.'
+#    echo ' '
+#  fi
+#else
+#  echo 'Temporary SQL file '$tempsqls' does not exist.'
+#  echo 'Exiting with error (return code = 3).'
+#  exit 3
+#fi
+#
+#tempsql2s='tempsql2s'$seq_no'.sql'
+#if [ -f "$tempsql2s" ]; then
+#    rm -f $tempsql2s
+#fi
+#tempouts='tempouts.'$seq_no
+#echo "spool $tempouts
+#start $tempsqls
+#spool off
+#" > $tempsql2s
+#
+#if [ -f "$tempsql2s" ]; then
+#  if [ "$DEBUG" = "YES" ]; then
+#    echo 'Contents of temporary status SQL file #2...'
+#    cat $tempsql2s
+#    echo '...end of temporary status SQL file #2.'
+#    echo ' '
+#  fi
+#else
+#  echo 'Temporary SQL file '$tempsql2s' does not exist.'
+#  echo 'Exiting with error (return code = 4).'
+#  exit 4
+#fi
+
+logtest=login.$seq_no
+echo "$login
+spool $logtest
+prompt got in to start $tempsql2s
+spool off
+start $tempsql2s
+"|sqlplus -s
+if [ -f $logtest ]; then
+  rm -f $logtest 1>/dev/null 2>&1
+else
+  echo 'Could not log in to SQL*Plus.'
+  echo 'Exiting with error (return code = 5).'
+  err=5
+fi
+
+if [ -f "$tempouts" ]; then
+  echo 'Results from run of temporary status SQL files...'
+  cat $tempouts
+  jobstat=`cat $tempouts | grep status | awk '{print $2 }'`
+  echo jobstat is $jobstat
+  if [ "$jobstat" = "" ]; then
+     err1=998
+  else
+    if [ "$jobstat" = "C" ]; then
+       err1=0
+    else
+       if [ "$jobstat" = "S" ]; then
+           err1=999
+           echo "serious error in program"
+       else
+           err=1
+           echo "program aborted"
+       fi
+    fi
+  fi
+  echo '...end of results.'
+  echo ' '
+else
+  echo 'No output file found from run of temporary status SQL files.'
+fi
+
+# Register report and log files
+if [ -f "$bannerlog" ]; then
+ # OUTPUT='';export OUTPUT #added to solve group difference problem
+  file=$bannerlog; export file
+  $SQLOPER_HOME/exec/FILESIZE $file $err
+  err=$?
+fi
+if [ -f "$bannerlis" ]; then
+ # OUTPUT='';export OUTPUT #added to solve group difference problem
+  file=$bannerlis; export file
+  $SQLOPER_HOME/exec/FILESIZE $file $err
+  err=$?
+fi
+
+if [ -f "$GURJOBS/${command}_$one_up.log" ]; then
+ # OUTPUT='';export OUTPUT #added to solve group difference problem
+  file="$GURJOBS/${command}_$one_up.log"; export file
+  $SQLOPER_HOME/exec/FILESIZE $file $err
+  err=$?
+fi
+if [ -f "$GURJOBS/${command}_$one_up.lis" ]; then
+ # OUTPUT='';export OUTPUT #added to solve group difference problem
+  file="$GURJOBS/${command}_$one_up.lis"; export file
+  $SQLOPER_HOME/exec/FILESIZE $file $err
+  err=$?
+fi
+
+
+rm -f $tempsql  1>/dev/null 2>&1
+rm -f $tempsql2 1>/dev/null 2>&1
+rm -f $tempout  1>/dev/null 2>&1
+rm -f $tempsqls  1>/dev/null 2>&1
+rm -f $tempsql2s 1>/dev/null 2>&1
+rm -f $tempouts  1>/dev/null 2>&1
+rm -f one_up.$seq_no
+rm -f $par.1 1>/dev/null 2>&1
+rm -f $par.2 1>/dev/null 2>&1
+
+err2=0
+
+#if [ "$err1" != "0" ]; then
+#  echo "Program Failed table lookup - usbsubm ..... program aborting"
+#  err2=$err1
+#fi
+
+if [ "$err" != "0" ]; then
+  echo "Program Failed to execute properly ..... program aborting"
+  err2=$err
+fi
+exit $err2
