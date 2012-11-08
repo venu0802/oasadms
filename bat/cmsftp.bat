@@ -29,16 +29,21 @@ for /f "tokens=1,2,3,4 delims=: " %%a in ( "%current_line%" ) do (
      echo quit >>  %jiraissue%_wh_sftp.txt
     )
  ) 
-
  if "!_versioncopy!" == "start" (    
     for /f "tokens=1,2,3,4 delims=\" %%g in ( "%current_line%" ) do ( 
+    
+      if "%%g" == "exp" (
+      
+       echo put dvlp\%%a %%h              >>  %jiraissue%_sftp.txt  
+       echo chmod 777 %%h                 >>  %jiraissue%_sftp.txt          
+      ) else (
        echo put dvlp\%%a %%h              >>  %jiraissue%_sftp.txt  
        echo chmod 777 %%h                 >>  %jiraissue%_sftp.txt        
        echo put dvlp\%%a %%h              >>  %jiraissue%_wh_sftp.txt  
-       echo chmod 777 %%h                 >>  %jiraissue%_wh_sftp.txt              
+       echo chmod 777 %%h                 >>  %jiraissue%_wh_sftp.txt       
+      )
     )
  )
-
  if "%%a" == "version" (
    if "%%d" == "start" (
        set _versioncopy=start
@@ -54,14 +59,13 @@ for /f "tokens=1,2,3,4 delims=: " %%a in ( "%current_line%" ) do (
        echo cd /home/appworx-wd/%_dbinstance%/common/tmp/jira/%jiraissue%  >> %jiraissue%_sftp.txt    
        echo cd /home/appworx-wd/%_dbinstance%/common/tmp/jira/%jiraissue%  >> %jiraissue%_wh_sftp.txt  
        
-       echo put %jiraissue%.txt %jiraissue%.txt  >>  %jiraissue%_sftp.txt                
-       echo put %jiraissue%.txt %jiraissue%.txt  >>  %jiraissue%_wh_sftp.txt  
+       echo put %ujiraissue%.txt %ujiraissue%.txt  >>  %jiraissue%_sftp.txt                
+       echo put %ujiraissue%.txt %ujiraissue%.txt  >>  %jiraissue%_wh_sftp.txt  
        
-       echo chmod 777 %jiraissue%.txt %jiraissue%.txt >>  %jiraissue%_sftp.txt
-       echo chmod 777 %jiraissue%.txt %jiraissue%.txt >>  %jiraissue%_wh_sftp.txt
+       echo chmod 777 %ujiraissue%.txt >>  %jiraissue%_sftp.txt
+       echo chmod 777 %ujiraissue%.txt >>  %jiraissue%_wh_sftp.txt
    )
  )
-
 )
 goto :EOF
 :begin
@@ -72,7 +76,6 @@ REM **
 set _password=
 set _userid=
 set _verpath=
-set _filename=
 set _dbinstance=
 set _drive=
 set _versioncopy=
@@ -214,7 +217,6 @@ if exist %jiraissue%_wh_sftp.txt (
 set _password=
 set _userid=
 set _verpath=
-set _filename=
 set _dbinstance=
 set _drive=
 set _versioncopy=
