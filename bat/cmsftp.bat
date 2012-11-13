@@ -192,14 +192,21 @@ for /f "tokens=*" %%i in (%ujiraissue%.txt) do (
   call:createObjectsFile 
 )
 REM **
-REM ** send code to the appropriate server
+REM **
+REM ** FTP software to the appropriate server
+REM **
 REM **
 psftp -b %_verpath%\%_projpath%\%jiraissue%_sftp.txt -be -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu
 REM **
 REM ** UAT code also goes to wh5000
 REM **
 if "%copy_to_server%" == "truly" (
- set copy_to_server=wh5000
+ psftp -b %_verpath%\%_projpath%\%jiraissue%_wh_sftp.txt -be -l %_userid% -pw %_password% wh5000.it.usf.edu  
+)
+REM **
+REM ** PROD code also goes to gemini
+REM **
+if "%copy_to_server%" == "gemini" (
  psftp -b %_verpath%\%_projpath%\%jiraissue%_wh_sftp.txt -be -l %_userid% -pw %_password% %copy_to_server%.cfr.usf.edu 
 )
 REM **
