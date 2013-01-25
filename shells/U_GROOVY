@@ -1,0 +1,47 @@
+#***********************************************************************
+#
+#  University of South Florida
+#  Student Information System
+#  Program Unit Information
+#
+#  General Information
+#  -------------------
+#  Shell Script Name  : U_GROOVY
+#  Process Associated : common
+#  Object Source File Location and Name : exec\U_GROOVY.shl
+#  Business Logic : 
+#   Explain business logic here.
+#
+#
+# Audit Trail (in descending date order)
+# ------------------------------------  
+#  Version  Issue      Date         User         Reason For Change
+#  -----  -------  ---------  ------     -----------------------
+#     1     xxxxxx-xx  9/24/2012       VBANGALO     Initial Creation 
+#   
+#************************************************************************
+# show params passed in
+echo `$SQLOPER_HOME/exec/ONELINE $par`
+# standard appworx debug. Same as java.
+if [ -f $SQLOPER_HOME/debug/AWJAVA ]; then
+  echo Debug On
+  set -x
+fi
+cd $app_path
+echo "app path is $app_path" 
+# set application specific class path 
+if [ -f CLASSPATH ]; then
+echo "found CLASSPATH file"
+. ./CLASSPATH
+else
+. CLASSPATH
+fi
+# display class path if debug is set
+if [ -f $SQLOPER_HOME/debug/AWJAVA ]; then
+  echo $CLASSPATH
+fi
+# execute groovy script
+echo groovy $program `$SQLOPER_HOME/exec/ONELINE $so_par`
+groovy $program `$SQLOPER_HOME/exec/ONELINE $so_par`
+exit $?
+
