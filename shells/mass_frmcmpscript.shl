@@ -1,0 +1,506 @@
+:
+# *************************************************************************
+# AUDIT TRAIL: 5.4
+# 1. This is a new shell will generate fmx and plx files for Solaris platforms.
+# AUDIT TRAIL: 6.0
+# 1. Removed obsolete forms soasusp.fmb, spamedi.fmb, spaintl.fmb
+#    and sfaprfe.fmb
+# 2. Added New forms for 6.0
+#                                                PJD 03-FEB-2003
+# AUDIT TRAIL: 7.0
+# 1. Added new General reference form,goqclib.fmb to list.
+# 2. Added new forms for 7.0 upgrade.
+# 3. Removed four obsolete forms.
+# 4. Changed all references to 6.0 forms to 9.0 forms.
+#                                                PJD 09-SEP-2004
+# AUDIT TRAIL: 7.1
+# 1. Added 2 new forms.                          PJD 01-APR-2005
+# AUDIT TRAIL: 7.2
+# 1. Added new forms.
+# 2. Removed 5 obsolete forms.                   PJD 06-SEP-2005
+# AUDIT TRAIL: 7.3
+# 1. Removed 1 obsolete form.                   PJD 13-FEB-2006
+# 2. Added 5 new forms.                         PJD 19-MAR-2006
+# 3. Added saqolib.fmb to list of libraries to include when generating
+#    Student forms.                             PJD 27-MAR-2006
+# 4. Added compile_all=special statement for form generates.
+#                                               PJD 22-APR-2006
+# AUDIT TRAIL: 7.3.1
+# 1. Added  three new forms.                    PJD 05-SEP-2006
+#
+# AUDIT TRAIL: 8.0                              NGB 03/05/2007
+# 1. Changed executable name from f90gen to frmcmp_batch
+# 2. Added new reference form soqmlib.fmb
+# 3. Added new forms
+#   stvmecl.fmb soamaud.fmb saamapp.fmb sgamstu.fmb sfamreg.fmb
+# 4. Added new forms
+#  stvgast.fmb stvgadr.fmb shagadr.fmb shagads.fmb shagelr.fmb shagapp.fmb
+# 5. Added new form ssiresv.fmb
+# 6. Added new forms scaclbd.fmb and ssaclbd.fmb
+# 7. Added form sfarmsg.fmb
+# 8. Added new forms ssawlsc.fmb and soawltc.fmb
+# 8. Added new forms sfiwlnt.fmb sfawlpr.fmb sfaxwlp.fmb and sfarwlp.fmb
+# 10. Added new form shaincg.fmb
+# 11. Removed sfamass.fmb. Form Obsoleted
+# 12. Added environment variable NLS_LENGTH_SEMANTICS
+#
+# AUDIT TRAIL: 8.1                             NGB 05/21/2008
+# 1. Added new forms stvsael.fmb stvsare.fmb stvsaat.fmb and stvsaqs.fmb
+# 2. Added new form stvsatr.fmb
+# 3. Added new form stvsarx.fmb
+# 4. Added new form sgaaprg.fmb
+# 5. Added new form stvdcpr.fmb
+# 6. Added new form sgisprt.fmb
+# 7. Added new form sgamspt.fmb
+#
+# AUDIT TRAIL: 8.2
+# 1. Obsoleted stvtost.fmb
+# 2. Added new scamexc.fmb
+#
+# AUDIT TRAIL: 8.3
+# 1. Added new form stvstsp.fmb
+# 2. Added new form soafacs.fmb
+#
+# AUDIT TRAIL: 8.4
+# 1. Added new form sfascpr.fmb
+# 2. Added new form stvscpc.fmb
+# 3. Added new form soascpt.fmb
+# 4. Added new form sfastsr.fmb
+# 5. Added new form soacscp.fmb
+# 6. Added new form soqcscp.fmb
+# AUDIT TRAIL END
+#
+# *****************************************************************************************
+#-- USF AUDIT TRAIL START
+#--
+#--  File Name: mass_frmcmpscript
+#--  Object Source File Location and Name: shells\mass_frmcmpscript.shl
+#--  Business Logic : 
+#--    This script is a copy of frmcmpscript.shl and renamed for mass compilation
+#--    to compile multiple USF custom forms.
+#--
+#--  Audit Trail (in descending date order)
+#--  --------------------------------------  
+#--  Version  Issue        Date          User         Reason For Change
+#--  -------  ---------    -----------   --------     ------------------
+#--     2     OASADMS-7    03/29/2013    HHNGO        Modified for mass forms compilation
+#--                                                   and this script will be used by script 
+#--                                                   mass_custfrm_compile.shl. 
+#--     1                  12/05/08      BH           Initial Modification.
+#--                                                 
+#-- USF AUDIT TRAIL END
+# *****************************************************************************************
+#
+get_cmds ()
+{
+# *************************************************************************
+# The get_cmds function will call the find_cmd function to get the
+# path to a command. What affect is to unalias any commands we will
+# be using. We need to know for example that when we issue an rm
+# command, we won't encounter an alias where rm translates to rm -i
+# *************************************************************************
+  CMD_LS=`find_cmd ls`
+  if [ ! "$?" = "0" ] ; then
+     echo ""
+     echo "ERROR - Error locating the ls command - aborting"
+     echo ""
+     fatal_error="Y"
+     return 1
+  fi
+  export CMD_LS
+  CMD_RM=`find_cmd rm`
+  if [ ! "$?" = "0" ] ; then
+     echo ""
+     echo "ERROR - Error locating the rm command - aborting"
+     echo ""
+     fatal_error="Y"
+     return 1
+  fi
+  export CMD_RM
+  CMD_LN=`find_cmd ln`
+  if [ ! "$?" = "0" ] ; then
+     echo ""
+     echo "ERROR - Error locating the ln command - aborting"
+     echo ""
+     fatal_error="Y"
+     return 1
+  fi
+  export CMD_LN
+  return 0
+}
+find_cmd ()
+{
+# *************************************************************************
+# Function created from the findcmd.shl found in the install directory.
+# Shell that looks for the first occurance of a command down the UNIX path
+# to overcome any problems associated with the command being aliased.
+# Usage:
+#  findcmd.shl cmd
+#
+# Note: echo, sed and pwd must be found and not aliased or neither script
+#       will work.
+# *************************************************************************
+if [ "$1" = "" ]
+   then
+      echo "Missing parameter"
+      echo "   Parameter 1 must be a file name"
+      return 1
+fi
+
+for dir in `echo "$PATH" | sed 's/\:/ /g'` ; do
+   if [ -d "$dir" ] ; then
+        cd $dir
+      if [ -f "$1" ] ; then
+           case $1 in
+              df ) aparm_list='t I a'
+                   for aparm in $aparm_list ; do
+                      $1 -$aparm > /dev/null 2> /dev/null
+                      if [ "$?" = "0" ]; then
+                          echo "$dir/$1 -$aparm"
+                          return 0
+                      fi
+                   done;;
+               * ) echo $dir/$1
+                   return 0;;
+           esac
+      fi
+   fi
+done
+echo "cmd_$1_not_found"
+return 1
+}
+chk_req_files ()
+{
+# *************************************************************************
+# Function which checks to be sure the required reference files exists in
+# the current directory and are linked properly, plus anything else that's
+# needed before we start the generates.
+#
+# You must have previously define the list my_req_files and filled it
+# with your file names prior to calling this function. If the file does
+# not exist in the current direcory this function will try to get it
+# from $BANNER_LINKS, provided $BANNER_LINKS is define. If not it's a
+# fatal error.
+#
+# Make sure you've define the variable fatal_error and set it to N
+# before calling this function.
+# *************************************************************************
+# Return Values
+#    1 - One or more errors occurred
+#    0 - Everything's just swell
+# *************************************************************************
+ if [ ${BANNER_LINKS} ]; then
+    does_bl_exist="Y"
+ else
+    does_bl_exist="N"
+ fi
+#
+ for my_rfile in $my_req_files ; do
+    if [ ! -f ${my_rfile} ]; then
+       if [ ${does_bl_exist} = "Y" ]; then
+          if [ -f ${BANNER_LINKS}/${my_rfile} ]; then
+             cp ${BANNER_LINKS}/${my_rfile} $my_rfile
+          fi
+       fi
+    fi
+    if [ ! -f ${my_rfile} ]; then
+       echo "ERROR - The required file, ${my_rfile}, does not exist"
+       echo "        in the current directory `pwd`"
+       if [ ${does_bl_exist} = "Y" ] ; then
+          echo "        and we could not find it in BANNER_LINKS."
+       else
+          echo "        and we could not find it."
+       fi
+       fatal_error="Y"
+       continue
+    fi
+# *************************************************************************
+# Build the upper.lower case version of the file name, and get the inode
+# of the lower.lower
+# *************************************************************************
+     source_bn=`echo $my_rfile | cut -f1 -d.`
+    source_ext=`echo $my_rfile | cut -f2 -d.`
+      casebase=`echo $source_bn | tr "[a-z]" "[A-Z]"`
+     up_low_fn=$casebase.$source_ext
+ my_rfile_inum=`$CMD_LS -i ${my_rfile} | awk '{ print $1 }' `
+# *************************************************************************
+# If the UPPER.lower file exists, get the inode and compare it to the
+# inode of the lower.lower to make sure they are the same file.
+# *************************************************************************
+    if [ -f ${up_low_fn} ]; then
+       up_low_fn_inum=`$CMD_LS -i ${up_low_fn} | awk '{ print $1 }' `
+       if [ ! "${up_low_fn_inum}" = "${my_rfile_inum}" ]; then
+          echo "WARNING - ${up_low_fn} exists but is not linked to ${my_rfile}"
+          echo "          Attempting to correct."
+          $CMD_RM $up_low_fn
+          if [ ! "$?" = "0" ] ; then
+             echo "ERROR - Unable to correct"
+             fatal_error="Y"
+             continue
+          fi
+       else
+          continue
+       fi
+    fi
+# *************************************************************************
+# link the lower.lower file as upper.lower
+# *************************************************************************
+    $CMD_LN -f ${my_rfile} ${up_low_fn}
+    if [ ! "$?" = "0" ]; then
+       echo "ERROR - The required file, ${up_low_fn}, does not exist"
+       echo "        in the current directory `pwd`"
+       echo "        and we could not link it from $my_rfile"
+       fatal_error="Y"
+       continue
+    fi
+  done
+return 0
+}
+#
+generate_it ()
+{
+# *************************************************************************
+# Define a function to generate forms executables.
+# Arg 1 - the name of the source file, e.g. goqolib.fmb, goqrpls.pll, etc.
+# *************************************************************************
+  source_bn=`echo $1 | cut -f1 -d.`
+ source_ext=`echo $1 | cut -f2 -d.`
+#
+case $source_ext in
+  "fmb") target_ext="fmx";
+         mod_type="form";;
+  "mmb") target_ext="mmx";
+         mod_type="menu";;
+  "pll") target_ext="plx";
+         mod_type="library";;
+      *) echo ""
+         echo "ERROR - Unknown file extension for file $1. File not processed";
+         echo ""
+         errors_occurred="y";
+         return 1;;
+ esac
+#
+ target_fn=$source_bn.$target_ext
+    err_fn=$source_bn.err
+#
+if [ "$DEBUG" = "y" ] || [ "$DEBUG" = "Y" ] ; then
+   echo "vbls       arg1= $1"
+   echo "vbls  source_bn= $source_bn"
+   echo "vbls source_ext= $source_ext"
+   echo "vbls  target_fn= $target_fn"
+   echo "vbls     err_fn= $err_fn"
+   echo ""
+fi
+# *************************************************************************
+# Make sure there's a file to generate
+# *************************************************************************
+ if [ ! -f ${1} ]; then
+    echo "ERROR - File, ${1}, does not exist"
+    echo "        in directory `pwd`"
+    errors_occurred="y"
+    return 1
+ fi
+# *************************************************************************
+# Get rid of any files that can get created before we start we
+# we can tell what happened.
+# *************************************************************************
+ if [ -f ${err_fn} ]; then
+    $CMD_RM ${err_fn}
+ fi
+#
+ if [ -f ${target_fn} ]; then
+    $CMD_RM ${target_fn}
+ fi
+#
+case $source_ext in
+  "fmb") frmcmp_batch $source_bn $fgen_user/$fgen_pass module_type=$mod_type batch=yes output_file=$target_fn compile_all=special;;
+  "mmb") frmcmp_batch $source_bn $fgen_user/$fgen_pass module_type=$mod_type batch=yes output_file=$target_fn compile_all=special;;
+  "pll") frmcmp_batch $source_bn $fgen_user/$fgen_pass module_type=$mod_type batch=yes output_file=$target_fn compile_all=special;;
+esac
+# *************************************************************************
+# See if we got an executable, and if so, make sure it's newer than the source
+# *************************************************************************
+ if [ -f ${target_fn} ]; then
+    if  [ `find ${target_fn} ! -newer ${1}` ]; then
+        echo "ERROR - ${target_fn} failed to generate. [fg1]"
+        errors_occurred="y"
+        return 1
+    fi
+ else
+    echo "ERROR - ${target_fn} failed to generate. [fg2]"
+    errors_occurred="y"
+    return 1
+ fi
+ if [ -f ${err_fn} ]; then
+    $CMD_RM ${err_fn}
+ fi
+#
+casebase=`echo $source_bn | tr "[a-z]" "[A-Z]"`
+$CMD_LN -f $target_fn $casebase.$target_ext
+return 0
+}
+# *************************************************************************
+# Establish environment variables
+# *************************************************************************
+FORMS_PATH=.:${FORMS_PATH}
+export FORMS_PATH
+ORACLE_PATH=
+export ORACLE_PATH
+NLS_LENGTH_SEMANTICS=CHAR
+export NLS_LENGTH_SEMANTICS
+# *************************************************************************
+# Execute the get_cmds function to get the unaliased, fully qualified
+# commands we'll be needing
+# *************************************************************************
+fatal_error="N"
+get_cmds
+if [ "$fatal_error" = "Y" ] ; then
+   echo " "
+   echo "ERROR - One or more commands used by $0 could not be found."
+   echo "        $0 aborted before ANYTHING was generated"
+   echo " "
+   exit 1
+fi
+# *************************************************************************
+# Everything above this is generic and should not need to be changed.
+# *************************************************************************
+#                   BEGIN PRODUCT SPECIFIC PROCESSING
+# *************************************************************************
+# NOTE: If you are using SCT Banner's role-level security, verify that
+#       the seed numbers in the following two location are in sync.
+#
+#       1) the BANSECR.GUBIPRF table using the Security Profile
+#          Maintenance window of the GSASECR form.
+#
+#       2) the G$_VERIFY_ACCESS trigger which is part of the
+#          G$_FORM_CLASS in the GOQOLIB form which will be transferred
+#          to this directory per the instructions below.
+#
+#       If the seed numbers are not the same, you will not be able
+#       to run any of the generated forms.
+# *************************************************************************
+# Instructions for use:
+# 1. Copy this file into a new or empty directory on the machine
+#    containing the Oracle Forms Builder executable.
+# 2. Copy all the fmb, pll and mmb files in the forms subdirectory of your
+#    product into the same directory.
+# 3. Also copy the following reference files into this directory if
+#    they are not a part of your product. (Otherwise they'll already be
+#    there if you did step 2)
+# Review each function for more information on the specific processing
+# performed by that function.
+# *************************************************************************
+# Create a list of all your required files. Then execute the function that
+# makes sure they're in the current directory and linked properly. You
+# MUST set the variable fatal_error="N" before calling chk_req_files
+# If the files are not in the current directory and you have the
+# environment variable BANNER_LINKS defined, the chk_req_file will
+# copy them frmo $BANNER_LINKS into the current directory.
+# *************************************************************************
+#my_req_files="eoqrpls.pll
+#              foqolib.fmb
+#              foqrpls.pll
+#              goqclib.fmb
+#              goqgmnu.pll
+#              goqolib.fmb
+#              goqorep.pll
+#              goqrlib.fmb
+#              goqrpls.pll
+#              goqwflw.pll
+#              guagmnu.fmb
+#              gutgmnu.fmb
+#              noqflib.fmb
+#              noqfpls.pll
+#              noqjpls.pll
+#              noqlibr.fmb
+#              noqlpls.pll
+#              noqnlib.fmb
+#              noqnpls.pll
+#              noqolib.fmb
+#              noqppls.pll
+#              noqrpls.pll
+#              noqupls.pll
+#              poqlibr.fmb
+#              poqmenu.fmb
+#              poqrpls.pll
+#              roqolib.fmb
+#              roqrpls.pll
+#              saqolib.fmb
+#              soqmlib.fmb
+#              soqolib.fmb
+#              soqrpls.pll
+#              toqolib.fmb
+#              toqrpls.pll"
+
+#-- USF Version 1 START
+while IFS= read -r file
+do
+   if [ -f $BANNER_LINKS/$file ]
+   then
+      my_req_files="$my_req_files $file
+"
+   fi
+done < ./unique_libraries.txt
+
+while IFS= read -r file
+do
+   if [ -f $BANNER_LINKS/$file ]
+   then
+      my_req_files="$my_req_files $file
+"
+   fi
+done < ./local_libraries.txt
+#-- USF Version 1 END
+
+echo " "
+chk_req_files
+#
+if [ "$fatal_error" = "Y" ] ; then
+   echo " "
+   echo "ERROR - One or more required reference files are missing."
+   echo "        $0 aborted before ANYTHING was generated"
+   echo " "
+   exit 1
+fi
+# *************************************************************************
+# Define the username/password variables and their default values which
+# will be used by the generate funcion. Also define errors_occurrred. It
+# will be set to "y" by the generate routine if something fails to gen.
+# *************************************************************************
+#fgen_user="baninst1"
+#fgen_pass="u_pick_it"
+
+errors_occurred="n"
+echo ""
+echo "Starting $0 on `date`"
+echo ""
+NLS_LENGTH_SEMANTICS=CHAR;export NLS_LENGTH_SEMANTICS
+# *************************************************************************
+# Generation of forms menus and libraries in the format:
+# generate_it file_name
+# *************************************************************************
+#
+#-- USF Version 2 START
+#--Compile all custom forms but not *.fmb in $my_req_files (unique_libraries.txt) 
+  for i in *.fmb; do
+     grep -q -i $i $my_req_files
+     if [ $? -ne 0 ]; then
+        #echo "Custom Form is " $i
+        generate_it $i
+     else 
+        continue;
+     fi
+  done
+#-- USF Version 2 END
+
+# *************************************************************************
+# Standard error check
+# *************************************************************************
+if [ $errors_occurred = "y" ] ; then
+   echo " "
+   echo "ERROR - Error(s) occurred generating executables."
+   echo " "
+fi
+echo ""
+echo "Finished $0 on `date`"
+echo ""

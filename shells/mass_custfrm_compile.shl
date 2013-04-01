@@ -1,0 +1,58 @@
+#!/bin/bash
+#--*************************************************************************************
+#--  University of South Florida
+#--  Banner Student System
+#--
+#--  General Information
+#--  -------------------
+#--  File Name: mass_custfrm_compile
+#--  Object Source File Location and Name : shells\mass_custfrm_compile.shl 
+#--  Business Logic : 
+#--    This script is used to compile multiple custom Ellucian/Banner forms and the code is
+#--    copied from the file custom_compile.shl (which is compiling single form).
+#--    
+#--  Audit Trail (in descending date order)
+#--  --------------------------------------  
+#--  Version  Issue        Date          User         Reason For Change
+#--  -------  ---------    -----------   --------     ------------------
+#--     2     OASADMS-7    03/29/2013    HHNGO        Modified for mass forms compilation.
+#--     1                  12/05/08      BH           Initial Creation.
+#--
+#--***************************************************************************************
+#      NOTES:
+#        1) A file called ./unique_libraries.txt must be created that
+#           contains each file needed by the Ellusian delivered compile
+#           scripts that are captured in the my_req_files variable
+#        2) By default, the .fmx's will remain in this directory and the
+#           forms_path variable will check here first. If this script is
+#           modified to move the .fmx's then the forms_path would need to 
+#           be changed accordingly
+#        3) The ORACLE_SID is set upon login, if it's not correct then rerun
+#           the ~/.bash_profile 
+#
+#--***************************************************************************************
+#
+
+read -p "Username: " ora_user
+export fgen_user=$ora_user
+read -s -p "Password: " ora_pass
+export fgen_pass=$ora_pass
+
+export BANNER_LINKS=$CODETREE/fmb
+echo -e "\nProcessing..." 
+
+#--Calling another modified script
+./mass_frmcmpscript.shl
+
+
+while IFS= read -r file
+do
+   if [ -f ./$file ] 
+   then 
+      rm `echo ${file%%.*} | tr [:upper:] [:lower:]`.${file##*.}
+      rm `echo ${file%%.*} | tr [:lower:] [:upper:]`.${file##*.}
+   fi
+done < ./unique_libraries.txt
+
+#--Move executable forms to /u01/dvlp/custom/fmx directory
+mv ./*.fmx fmx
