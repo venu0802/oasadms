@@ -12,20 +12,17 @@ hibernate {
 environments {
     development {
         dataSource {
-            jndiName = "jdbc/svnProjDevDS"
-            dbCreate = "update"
-        }
+           jndiName= "java:comp/env/jdbc/svnProjDS"
+         }
     }
     test {
         dataSource {
-            dbCreate = "update"
-            jndiName = "jdbc/svnProjTestDS"
+            jndiName= "java:comp/env/jdbc/svnProjDS"
         }
     }
     production {
         dataSource {
-            dbCreate = "update"
-            jndiName = "jdbc/svnProjDS"
+            jndiName= "java:comp/env/jdbc/svnProjDS"
         }
     }
 }

@@ -35,28 +35,24 @@ grails.spring.bean.packages = []
 // set per-environment serverURL stem for creating absolute links
 environments {
     production {
-        //grails.serverURL = "http://www.changeme.com"
         cas.loginUrl = 'https://webauth.usf.edu:443/login'
         cas.validateUrl = 'https://webauth.usf.edu:443/serviceValidate'
-        cas.serviceUrl = 'https://usfpro1.forest.usf.edu/svnProj/checkOut.zul'
+        cas.serviceUrl = 'https://usfpro12.forest.usf.edu:8443/svnProj/checkOut.zul'
         cas.disabled = false
         cas.mocking = false
     }
     development {
         cas.loginUrl = 'https://authtest.it.usf.edu:444/login'
         cas.validateUrl = 'https://authtest.it.usf.edu:444/serviceValidate'
-        cas.serviceUrl = 'https://usfdev1.forest.usf.edu/svnProjDev/checkOut.zul'
-        //cas.serviceUrl = 'http://131.247.82.25:7101/svnProj/checkOut.zul'
+        cas.serviceUrl = 'https://usfdev6.forest.usf.edu:8443/svnProj/checkOut.zul'
         cas.disabled = false
         cas.mocking = false
 
     }
     test {
-        //grails.serverURL = "http://localhost:8080/${appName}"
         cas.loginUrl = 'https://authtest.it.usf.edu:444/login'
         cas.validateUrl = 'https://authtest.it.usf.edu:444/serviceValidate'
-        //cas.serviceUrl = 'http://131.247.82.25:7101/svnProj/checkOut.zul'
-        cas.serviceUrl = 'https://usfdev1.forest.usf.edu/svnProjTest/checkOut.zul'
+        cas.serviceUrl = 'https://usfuat1.forest.usf.edu:8443/svnProj/checkOut.zul'
         cas.disabled = false
         cas.mocking = false
     }
@@ -65,14 +61,7 @@ environments {
 
 // log4j configuration
 log4j = {
-    // Example of changing the log pattern for the default console
-    // appender:
-    //
-    //appenders {
-    //    console name:'stdout', layout:pattern(conversionPattern: '%c{2} %m%n')
-    //}
-
-    error 'org.codehaus.groovy.grails.web.servlet',  //  controllers
+     error 'org.codehaus.groovy.grails.web.servlet',  //  controllers
             'org.codehaus.groovy.grails.web.pages', //  GSP
             'org.codehaus.groovy.grails.web.sitemesh', //  layouts
             'org.codehaus.groovy.grails.web.mapping.filter', // URL mapping
@@ -85,9 +74,18 @@ log4j = {
             'net.sf.ehcache.hibernate'
 
     warn 'org.mortbay.log'
+
+    appenders {
+        file name:'file', file:"/var/log/tomcat6/${appName}_stacktrace.log"
+    }
+    root {
+        debug 'stdout', 'file'
+        additivity = true
+    }
+
+
 }
 cas {
     urlPattern = '/*'
-// urlPattern = ['/oneurl/*', '/another', '/anotheranother/*']
     disabled = false
 }

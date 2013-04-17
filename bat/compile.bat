@@ -13,7 +13,7 @@ set /p env=Enter environment(Like devl/test/prod)
 if "%env%" == "devl" (
   grails dev war
   echo %cd%
-  copy %cd%\target\svnProj.war %cd%\..\..\..\svnProjDev.war
+  copy %cd%\target\svnProj.war %cd%\..\..\..\svnProj.war
   del /s  /q %cd%\target\svnProj.war
   rmdir /s  /q %cd%\target\classes
 )
@@ -21,7 +21,7 @@ if "%env%" == "devl" (
 if "%env%" == "test" (
   grails test war
   echo %cd%
-  copy %cd%\target\svnProj.war %cd%\..\..\..\svnProjTest.war
+  copy %cd%\target\svnProj.war %cd%\..\..\..\svnProj.war
   del /s  /q %cd%\target\svnProj.war
   rmdir /s  /q %cd%\target\classes
 )

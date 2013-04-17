@@ -1,15 +1,16 @@
 package usf
 
 import edu.yale.its.tp.cas.client.filter.CASFilter
-import org.zkoss.zk.ui.event.ForwardEvent
-import org.zkoss.zkgrails.GrailsComposer
-import org.zkoss.zul.*
-import javax.sql.DataSource
 import groovy.sql.Sql
-//import groovy.sql.Sql.BLOB
-import java.sql.Blob
+import oracle.sql.BLOB
+import org.zkoss.zk.ui.event.ForwardEvent
 import org.zkoss.zk.ui.event.InputEvent
+import org.zkoss.zkgrails.GrailsComposer
+
 import java.sql.Connection
+import javax.sql.DataSource
+
+import org.zkoss.zul.*
 
 class GetListComposer extends GrailsComposer {
     // variables defined in checkOut.zul
@@ -101,17 +102,20 @@ class GetListComposer extends GrailsComposer {
         Repository rep = objectList.getSelectedItem().value
         // dataSource = (DataSource) WebApplicationContextUtils.getWebApplicationContext(ServletContextHolder.servletContext).getBean('dataSource')
         DataSource dataSource = (DataSource) svnService.getDataSource()
-        Connection conn = dataSource.getConnection()
-		conn.setAutoCommit(false)
+        Connection conn =  dataSource.getConnection()
+        conn.setAutoCommit(false)
         def sql = new groovy.sql.Sql(conn)
         //def sql = new groovy.sql.Sql(dataSource)
+        sql.rows("select 'x' from dual").each{   r-> println r[0]  }
 
         def storedProcCall = """{? = call harv_import.f_get_blob($rep.id)}"""
-        sql.call(storedProcCall,  [Sql.BLOB] )
+        println "before calling stopred proc"
+        sql.call(storedProcCall, [Sql.BLOB])
                 {res ->
-                    //Sql.BLOB blb = res
+                    println "before file download.."
+                    BLOB blb = res
                     //java.sql.Blob blb = res
-                    InputStream ist = res.getBinaryStream()
+                    InputStream ist = blb.getBinaryStream()
                     Filedownload.save(ist, "text/html", "$rep.objectName")
                 }
         //sql.close()

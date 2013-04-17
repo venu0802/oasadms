@@ -1,0 +1,15 @@
+<Context>            
+           
+
+<Resource name="jdbc/svnProjDS"
+            auth="Container"
+            type="javax.sql.DataSource"
+            username="martian"
+            password=""
+            driverClassName="oracle.jdbc.driver.OracleDriver"
+            url="jdbc:oracle:thin:@truly.cfr.usf.edu:1526:REPTEST"
+            maxActive="8"
+            maxIdle="4"/>
+    truly.cfr.usf.edu
+
+</Context>
