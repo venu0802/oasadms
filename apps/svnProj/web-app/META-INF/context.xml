@@ -7,9 +7,8 @@
             username="martian"
             password=""
             driverClassName="oracle.jdbc.driver.OracleDriver"
-            url="jdbc:oracle:thin:@truly.cfr.usf.edu:1526:REPTEST"
+            url="jdbc:oracle:thin:@trusty.cfr.usf.edu:1526:REPDEV"
             maxActive="8"
             maxIdle="4"/>
-    truly.cfr.usf.edu
 
 </Context>
