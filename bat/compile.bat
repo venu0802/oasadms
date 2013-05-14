@@ -4,8 +4,10 @@ REM **
 REM ** Developer: Venu Bangalore
 REM **
 REM Developer: Venu Bangalroe
+SET CLASSPATH=Z:\grails\grails-1.3.4\lib\ojdbc6-11.2.0.1.0.jar;%CLASSPATH%
+set JAVA_HOME=Z:\java\jdk1.6.0_27
 set GRAILS_HOME=Z:\grails\grails-1.3.4
-PATH=%GRAILS_HOME%\BIN;%PATH%;Z:\svn\requiredfiles\CM;
+PATH=%GRAILS_HOME%\BIN;%PATH%;Z:\svn\requiredfiles\CM;%JAVA_HOME%\bin;
 SETLOCAL ENABLEDELAYEDEXPANSION
 set home_drive=%cd%
 set /p projName= Enter Project Name(Like svnProj)
