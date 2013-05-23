@@ -54,5 +54,5 @@ do
    fi
 done < ./unique_libraries.txt
 
-#--Move executable forms to /u01/dvlp/custom/fmx directory
-mv ./*.fmx fmx
+#--Move executable forms to $FORMS_HOME/fmx directory
+mv -f ./*.fmx fmx
