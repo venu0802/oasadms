@@ -60,8 +60,10 @@ environments {
         cas.serviceUrl = 'https://usfpro12.forest.usf.edu:8443/UcosmicSrvc/login'
         cas.disabled = false
         cas.mocking = false
+        oasis.dblink="prod.world"
     }
     development {
+        oasis.dblink="dvlp.world"
          cas.loginUrl = 'https://authtest.it.usf.edu:444/login'
         cas.validateUrl = 'https://authtest.it.usf.edu:444/serviceValidate'
         cas.serviceUrl = 'https://usfdev6.forest.usf.edu:8443/UcosmicSrvc/login'
@@ -74,6 +76,7 @@ environments {
         cas.serviceUrl = 'https://usfuat1.forest.usf.edu:8443/UcosmicSrvc/login'
         cas.disabled = false
         cas.mocking = false
+        oasis.dblink="pprd.world"
     }
 
 

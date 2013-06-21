@@ -4,7 +4,7 @@
 <Resource name="jdbc/cosmicSrvcDS"
             auth="Container"
             type="javax.sql.DataSource"
-            username="martian"
+            username="ucosmic"
             password=""
             driverClassName="oracle.jdbc.driver.OracleDriver"
             url="jdbc:oracle:thin:@trusty.cfr.usf.edu:1526:DWDVLP"

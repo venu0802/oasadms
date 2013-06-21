@@ -1,6 +1,10 @@
 class UrlMappings {
 
 	static mappings = {
+        "/lookUpInfo/"(controller: "faculty"){
+            action=[GET:"showLookupInfo"]
+        }
+
         "/facultyInfo/$netId?"(controller: "faculty"){
             action=[GET:"showFacultyInfo"]
         }
