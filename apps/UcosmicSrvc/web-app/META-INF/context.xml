@@ -8,7 +8,7 @@
             password=""
             driverClassName="oracle.jdbc.driver.OracleDriver"
             url="jdbc:oracle:thin:@trusty.cfr.usf.edu:1526:DWDVLP"
-            maxActive="2"
-            maxIdle="1"/>
+            maxActive="10"
+            maxIdle="2"/>
 
 </Context>
